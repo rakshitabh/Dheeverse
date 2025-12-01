@@ -1,7 +1,6 @@
 {
   "/(public)/login/page": "app/(public)/login/page.js",
   "/(public)/page": "app/(public)/page.js",
-  "/(public)/signup/page": "app/(public)/signup/page.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/auth/signup/route": "app/api/auth/signup/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js"
 }
