@@ -2,16 +2,21 @@
 node_modules/
 /.pnp
 .pnp.js
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
 
 # Testing
 /coverage
 
 # Next.js
-/.next/
+.next/
 /out/
 
 # Production
 /build
+/dist
+.dist/
 
 # Misc
 .DS_Store
@@ -35,10 +40,13 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+*.iml
 
 # OS
 Thumbs.db
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # Logs
 logs/
@@ -53,19 +61,15 @@ logs/
 # Turbopack
 .turbo/
 
-# System files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# IDE settings
-.vscode/
-.idea/
-*.iml
-
 # Temporary files
 tmp/
 temp/
 
-node_modules/
+# Backend uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Documentation (optional - uncomment if you want to exclude)
+# *.md
+# !README.md
 
