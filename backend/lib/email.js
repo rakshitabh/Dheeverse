@@ -1,5 +1,11 @@
-const axios = require("axios");
+let axios;
 
+async function getAxios() {
+  if (!axios) {
+    axios = (await import("axios")).default;
+  }
+  return axios;
+}
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
 const SENDER_NAME = process.env.BREVO_SENDER_NAME || "DheeVerse";
@@ -10,12 +16,14 @@ if (!BREVO_API_KEY) {
 
 async function sendEmail({ to, subject, html }) {
   try {
+    const axios = await getAxios();
+
     const response = await axios.post(
       "https://api.brevo.com/v3/smtp/email",
       {
         sender: {
-          email: SENDER_EMAIL,
-          name: SENDER_NAME,
+          email: process.env.BREVO_SENDER_EMAIL,
+          name: process.env.BREVO_SENDER_NAME || "DheeVerse",
         },
         to: [{ email: to }],
         subject,
@@ -23,7 +31,7 @@ async function sendEmail({ to, subject, html }) {
       },
       {
         headers: {
-          "api-key": BREVO_API_KEY,
+          "api-key": process.env.BREVO_API_KEY,
           "Content-Type": "application/json",
         },
       }
@@ -32,13 +40,11 @@ async function sendEmail({ to, subject, html }) {
     console.log("✅ Email sent via Brevo:", response.data.messageId);
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Brevo email failed:",
-      error.response?.data || error.message
-    );
+    console.error("❌ Brevo email failed:", error.response?.data || error.message);
     throw error;
   }
 }
+
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
