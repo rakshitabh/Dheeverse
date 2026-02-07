@@ -120,7 +120,7 @@ wellness-journal-app/
 - Node.js
 - Express
 - MongoDB (Mongoose)
-- Nodemailer (for OTP emails)
+- Brevo API (for OTP emails)
 - bcryptjs (password hashing)
 
 **Frontend:**
