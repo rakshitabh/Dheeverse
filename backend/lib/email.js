@@ -1,11 +1,3 @@
-let axios;
-
-async function getAxios() {
-  if (!axios) {
-    axios = (await import("axios")).default;
-  }
-  return axios;
-}
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
 const SENDER_NAME = process.env.BREVO_SENDER_NAME || "DheeVerse";
@@ -16,46 +8,48 @@ if (!BREVO_API_KEY) {
 
 async function sendEmail({ to, subject, html }) {
   try {
-    const axios = await getAxios();
-
-    const response = await axios.post(
-      "https://api.brevo.com/v3/smtp/email",
-      {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": BREVO_API_KEY,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
         sender: {
-          email: process.env.BREVO_SENDER_EMAIL,
-          name: process.env.BREVO_SENDER_NAME || "DheeVerse",
+          email: SENDER_EMAIL,
+          name: SENDER_NAME,
         },
         to: [{ email: to }],
         subject,
         htmlContent: html,
-      },
-      {
-        headers: {
-          "api-key": process.env.BREVO_API_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      }),
+    });
 
-    console.log("✅ Email sent via Brevo:", response.data.messageId);
-    return response.data;
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("❌ Brevo error response:", data);
+      throw new Error(data.message || "Brevo email failed");
+    }
+
+    console.log("✅ Email sent via Brevo:", data.messageId);
+    return data;
   } catch (error) {
-    console.error("❌ Brevo email failed:", error.response?.data || error.message);
+    console.error("❌ Brevo email failed:", error.message);
     throw error;
   }
 }
-
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 async function sendOTPEmail(email, otp, type = "signup") {
-  const isPasswordReset = type === "password-reset";
-
-  const subject = isPasswordReset
-    ? "Password Reset OTP – DheeVerse"
-    : "Your OTP for DheeVerse – Expires in 10 minutes";
+  const subject =
+    type === "password-reset"
+      ? "Password Reset OTP – DheeVerse"
+      : "Your OTP for DheeVerse – Expires in 10 minutes";
 
   const html = `
     <h2>DheeVerse</h2>
