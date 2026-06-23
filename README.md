@@ -120,7 +120,7 @@ wellness-journal-app/
 - Node.js
 - Express
 - MongoDB (Mongoose)
-- Brevo API (for OTP emails)
+- SMTP (for OTP emails)
 - bcryptjs (password hashing)
 
 **Frontend:**
@@ -159,31 +159,6 @@ cd frontend
 npm run build
 npm run preview
 ```
-
-## 📚 Documentation
-
-- **TEST_SETUP.md** - Testing and troubleshooting guide
-- **COMPLETE_CONVERSION_SUMMARY.md** - Full conversion details
-- **QUICK_START.md** - Quick setup guide
-
-## ✅ Conversion Status
-
-**100% Complete** - All Next.js files removed, all components converted to React Router.
-
-- ✅ No Next.js dependencies
-- ✅ All components use React Router
-- ✅ Backend fully functional
-- ✅ Frontend fully functional
-- ✅ All imports updated
-
-## 🐛 Troubleshooting
-
-See **TEST_SETUP.md** for detailed troubleshooting guide.
-
-Common issues:
-- **Backend won't start**: Check MongoDB connection string
-- **Frontend won't start**: Check if port 3000 is available
-- **Import errors**: Verify all components exist and paths are correct
 
 ## 📄 License
 
