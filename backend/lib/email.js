@@ -1,42 +1,33 @@
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
-const SENDER_NAME = process.env.BREVO_SENDER_NAME || "DheeVerse";
+const nodemailer = require('nodemailer');
 
-if (!BREVO_API_KEY) {
-  console.error("❌ BREVO_API_KEY is missing");
+// Gmail SMTP Configuration
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false, // true for 465, false for other ports like 587
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  console.error("❌ Gmail SMTP credentials are missing in .env file");
 }
 
 async function sendEmail({ to, subject, html }) {
   try {
-    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "api-key": BREVO_API_KEY,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        sender: {
-          email: SENDER_EMAIL,
-          name: SENDER_NAME,
-        },
-        to: [{ email: to }],
-        subject,
-        htmlContent: html,
-      }),
+    const info = await transporter.sendMail({
+      from: `"DheeVerse" <${process.env.SMTP_USER}>`,
+      to: to,
+      subject: subject,
+      html: html,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("❌ Brevo error response:", data);
-      throw new Error(data.message || "Brevo email failed");
-    }
-
-    console.log("✅ Email sent via Brevo:", data.messageId);
-    return data;
+    console.log("✅ Email sent via Gmail SMTP:", info.messageId);
+    return info;
   } catch (error) {
-    console.error("❌ Brevo email failed:", error.message);
+    console.error("❌ Gmail SMTP email failed:", error.message);
     throw error;
   }
 }

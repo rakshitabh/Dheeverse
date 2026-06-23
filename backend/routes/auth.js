@@ -3,18 +3,13 @@ const router = express.Router();
 const { connectToDatabase } = require('../lib/mongodb');
 const User = require('../lib/models/User');
 const OTP = require('../lib/models/OTP');
-await sendEmail({
-  to: user.email,
-  subject: "Reset your Dheeverse password",
-  html: `
-    <h3>Password Reset</h3>
-    <p>Your reset code is:</p>
-    <h2>${otp}</h2>
-    <p>This code expires in 10 minutes.</p>
-  `,
-});
-
 const { generateToken } = require('../lib/auth-middleware');
+const { sendOTPEmail, sendWelcomeEmail } = require('../lib/email');
+
+// Helper function to generate OTP
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 // Login
 router.post('/login', async (req, res) => {
