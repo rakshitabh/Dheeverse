@@ -13,17 +13,28 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware - CORS configuration
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:5173",
+//       process.env.FRONTEND_URL
+//     ],
+//     credentials: true,  
+//   })
+// );
+
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.FRONTEND_URL
-    ],
-    credentials: true,  
+    origin: true,
+    credentials: true,
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
