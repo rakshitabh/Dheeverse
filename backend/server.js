@@ -13,20 +13,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware - CORS configuration
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:5173",
-//       process.env.FRONTEND_URL
-//     ],
-//     credentials: true,  
-//   })
-// );
-
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://dheeverse.vercel.app",
+  "https://dheeverse-git-main-rakshita-bhat-s-projects.vercel.app"
+];
 
 app.use(
   cors({
-    origin: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
