@@ -1,111 +1,103 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
-// Gmail SMTP Configuration
-// const transporter = nodemailer.createTransport({
-//   host: process.env.SMTP_HOST,
-//   port: process.env.SMTP_PORT,
-//   secure: false, // true for 465, false for other ports like 587
-//   auth: {
-//     user: process.env.SMTP_USER,
-//     pass: process.env.SMTP_PASS,
-//   },
-// });
-
+// Brevo SMTP Transporter
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_PORT == 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-});
-
-// const transporter = nodemailer.createTransport({
-//   host: process.env.SMTP_HOST,
-//   port: 465,
-//   secure: true,
-//   auth: {
-//     user: process.env.SMTP_USER,
-//     pass: process.env.SMTP_PASS,
-//   },
-// });
-
-// transporter.verify(function (error, success) {
-//   if (error) {
-//     console.error("SMTP Verify Error:", error);
-//   } else {
-//     console.log("SMTP Server is ready");
-//   }
-// });
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // Port 587
+  secure: false, // Port 587 uses STARTTLS
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 });
 
+// Verify SMTP connection when server starts
 transporter.verify((error, success) => {
   if (error) {
-    console.error("Brevo SMTP Verify Error:", error);
+    console.error("❌ Brevo SMTP Verify Error:", error);
   } else {
     console.log("✅ Brevo SMTP connected successfully");
   }
 });
 
-if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-  console.error("❌ Gmail SMTP credentials are missing in .env file");
+// Check environment variables
+if (
+  !process.env.SMTP_HOST ||
+  !process.env.SMTP_USER ||
+  !process.env.SMTP_PASS
+) {
+  console.error("❌ SMTP credentials are missing");
 }
 
+// Generic email sender
 async function sendEmail({ to, subject, html }) {
   try {
     const info = await transporter.sendMail({
-      from: `"DheeVerse" <${process.env.SMTP_USER}>`,
-      to: to,
-      subject: subject,
-      html: html,
+      from: `"${process.env.BREVO_SENDER_NAME}" <${process.env.BREVO_SENDER_EMAIL}>`,
+      to,
+      subject,
+      html,
     });
 
-    console.log("✅ Email sent via Gmail SMTP:", info.messageId);
+    console.log("✅ Email sent:", info.messageId);
     return info;
   } catch (error) {
-    console.error("❌ Gmail SMTP email failed:", error.message);
+    console.error("❌ Email sending failed:", error);
     throw error;
   }
 }
 
+// Generate 6-digit OTP
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// Send OTP Email
 async function sendOTPEmail(email, otp, type = "signup") {
   const subject =
     type === "password-reset"
-      ? "Password Reset OTP – DheeVerse"
-      : "Your OTP for DheeVerse – Expires in 10 minutes";
+      ? "Password Reset OTP - DheeVerse"
+      : "Verify Your Email - DheeVerse";
 
   const html = `
-    <h2>DheeVerse</h2>
-    <p>Your OTP is:</p>
-    <h1>${otp}</h1>
-    <p>This OTP expires in 10 minutes.</p>
+    <div style="font-family: Arial, sans-serif; padding:20px;">
+      <h2>DheeVerse</h2>
+
+      <p>Your OTP is:</p>
+
+      <h1 style="letter-spacing:5px; color:#4CAF50;">
+        ${otp}
+      </h1>
+
+      <p>This OTP will expire in <b>10 minutes</b>.</p>
+
+      <p>If you didn't request this email, you can ignore it.</p>
+    </div>
   `;
 
-  return sendEmail({ to: email, subject, html });
+  return sendEmail({
+    to: email,
+    subject,
+    html,
+  });
 }
 
+// Welcome Email
 async function sendWelcomeEmail(email, name) {
   const html = `
-    <h2>Welcome to DheeVerse, ${name}!</h2>
-    <p>Your account has been created successfully.</p>
-    <a href="${process.env.FRONTEND_URL}">Open App</a>
+    <div style="font-family: Arial, sans-serif; padding:20px;">
+      <h2>Welcome to DheeVerse, ${name}! 🎉</h2>
+
+      <p>Your account has been created successfully.</p>
+
+      <p>
+        <a href="${process.env.FRONTEND_URL}">
+          Open DheeVerse
+        </a>
+      </p>
+
+      <p>Have a wonderful wellness journey 💚</p>
+    </div>
   `;
 
   return sendEmail({
