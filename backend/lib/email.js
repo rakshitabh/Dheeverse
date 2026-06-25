@@ -34,11 +34,29 @@ const transporter = nodemailer.createTransport({
 //   },
 // });
 
-transporter.verify(function (error, success) {
+// transporter.verify(function (error, success) {
+//   if (error) {
+//     console.error("SMTP Verify Error:", error);
+//   } else {
+//     console.log("SMTP Server is ready");
+//   }
+// });
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: false, // Port 587
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+transporter.verify((error, success) => {
   if (error) {
-    console.error("SMTP Verify Error:", error);
+    console.error("Brevo SMTP Verify Error:", error);
   } else {
-    console.log("SMTP Server is ready");
+    console.log("✅ Brevo SMTP connected successfully");
   }
 });
 
