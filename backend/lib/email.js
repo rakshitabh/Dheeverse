@@ -1,58 +1,46 @@
-const nodemailer = require("nodemailer");
+const fetch = require("node-fetch");
 
-// Brevo SMTP Transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // Port 587 uses STARTTLS
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const API_URL = "https://api.brevo.com/v3/smtp/email";
 
-// Verify SMTP connection when server starts
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Brevo SMTP Verify Error:", error);
-  } else {
-    console.log("✅ Brevo SMTP connected successfully");
-  }
-});
-
-// Check environment variables
-if (
-  !process.env.SMTP_HOST ||
-  !process.env.SMTP_USER ||
-  !process.env.SMTP_PASS
-) {
-  console.error("❌ SMTP credentials are missing");
-}
-
-// Generic email sender
 async function sendEmail({ to, subject, html }) {
-  try {
-    const info = await transporter.sendMail({
-      from: `"${process.env.BREVO_SENDER_NAME}" <${process.env.BREVO_SENDER_EMAIL}>`,
-      to,
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+      "content-type": "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender: {
+        name: process.env.BREVO_SENDER_NAME,
+        email: process.env.BREVO_SENDER_EMAIL,
+      },
+      to: [
+        {
+          email: to,
+        },
+      ],
       subject,
-      html,
-    });
+      htmlContent: html,
+    }),
+  });
 
-    console.log("✅ Email sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("❌ Email sending failed:", error);
-    throw error;
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Brevo API Error:", data);
+    throw new Error(data.message || "Failed to send email");
   }
+
+  console.log("✅ Email sent successfully");
+
+  return data;
 }
 
-// Generate 6-digit OTP
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Send OTP Email
 async function sendOTPEmail(email, otp, type = "signup") {
   const subject =
     type === "password-reset"
@@ -60,19 +48,13 @@ async function sendOTPEmail(email, otp, type = "signup") {
       : "Verify Your Email - DheeVerse";
 
   const html = `
-    <div style="font-family: Arial, sans-serif; padding:20px;">
       <h2>DheeVerse</h2>
 
       <p>Your OTP is:</p>
 
-      <h1 style="letter-spacing:5px; color:#4CAF50;">
-        ${otp}
-      </h1>
+      <h1>${otp}</h1>
 
-      <p>This OTP will expire in <b>10 minutes</b>.</p>
-
-      <p>If you didn't request this email, you can ignore it.</p>
-    </div>
+      <p>This OTP expires in 10 minutes.</p>
   `;
 
   return sendEmail({
@@ -82,34 +64,25 @@ async function sendOTPEmail(email, otp, type = "signup") {
   });
 }
 
-// Welcome Email
 async function sendWelcomeEmail(email, name) {
-  const html = `
-    <div style="font-family: Arial, sans-serif; padding:20px;">
-      <h2>Welcome to DheeVerse, ${name}! 🎉</h2>
-
-      <p>Your account has been created successfully.</p>
-
-      <p>
-        <a href="${process.env.FRONTEND_URL}">
-          Open DheeVerse
-        </a>
-      </p>
-
-      <p>Have a wonderful wellness journey 💚</p>
-    </div>
-  `;
-
   return sendEmail({
     to: email,
     subject: "Welcome to DheeVerse",
-    html,
+    html: `
+        <h2>Welcome ${name}!</h2>
+
+        <p>Your account has been created successfully.</p>
+
+        <a href="${process.env.FRONTEND_URL}">
+            Open DheeVerse
+        </a>
+    `,
   });
 }
 
 module.exports = {
   sendEmail,
   generateOTP,
-  sendOTPEmail,
+ sendOTPEmail,
   sendWelcomeEmail,
 };
