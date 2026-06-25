@@ -290,77 +290,167 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // Reset Password - Verify OTP and set new password
+// router.post('/reset-password', async (req, res) => {
+//   try {
+//     console.log('Reset password request received');
+    
+//     await connectToDatabase();
+//     const { email, otp, newPassword } = req.body;
+
+//     if (!email || !otp || !newPassword) {
+//       return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+//     }
+
+//     // Validate password strength
+//     if (newPassword.length < 8) {
+//       return res.status(400).json({ error: 'Password must be at least 8 characters' });
+//     }
+
+//     // Check password strength
+//     const hasUpperCase = /[A-Z]/.test(newPassword);
+//     const hasLowerCase = /[a-z]/.test(newPassword);
+//     const hasNumber = /[0-9]/.test(newPassword);
+//     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/'~`]/.test(newPassword);
+
+//     let strength = 0;
+//     if (hasUpperCase) strength++;
+//     if (hasLowerCase) strength++;
+//     if (hasNumber) strength++;
+//     if (hasSpecialChar) strength++;
+
+//     // Require at least 3 of 4 criteria for medium/strong passwords
+//     if (strength < 3) {
+//       return res.status(400).json({ 
+//         error: 'Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters' 
+//       });
+//     }
+
+//     // Find and verify OTP
+//     const otpRecord = await OTP.findOne({
+//       email,
+//       otp,
+//       type: 'password-reset',
+//       expiresAt: { $gt: new Date() },
+//       verified: false,
+//     });
+
+//     if (!otpRecord) {
+//       return res.status(400).json({ error: 'Invalid or expired OTP' });
+//     }
+
+//     // Find user
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     // Update password (will be hashed by pre-save hook)
+//     user.password = newPassword;
+//     await user.save();
+
+//     // Mark OTP as verified and delete it
+//     otpRecord.verified = true;
+//     await otpRecord.save();
+//     await OTP.deleteOne({ _id: otpRecord._id });
+
+//     console.log('Password reset successful for:', email);
+
+//     return res.status(200).json({
+//       message: 'Password reset successfully. Please login with your new password.',
+//     });
+//   } catch (error) {
+//     console.error('Reset password error:', error);
+//     return res.status(500).json({ error: 'Internal server error', details: String(error) });
+//   }
+// });
+
+
+
+
+// Reset Password - Verify OTP and set new password
 router.post('/reset-password', async (req, res) => {
   try {
-    console.log('Reset password request received');
-    
+    console.log("========== RESET PASSWORD ==========");
+
     await connectToDatabase();
+
     const { email, otp, newPassword } = req.body;
 
+    console.log("Request Body:", req.body);
+
     if (!email || !otp || !newPassword) {
-      return res.status(400).json({ error: 'Email, OTP, and new password are required' });
-    }
-
-    // Validate password strength
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
-    }
-
-    // Check password strength
-    const hasUpperCase = /[A-Z]/.test(newPassword);
-    const hasLowerCase = /[a-z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/'~`]/.test(newPassword);
-
-    let strength = 0;
-    if (hasUpperCase) strength++;
-    if (hasLowerCase) strength++;
-    if (hasNumber) strength++;
-    if (hasSpecialChar) strength++;
-
-    // Require at least 3 of 4 criteria for medium/strong passwords
-    if (strength < 3) {
-      return res.status(400).json({ 
-        error: 'Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters' 
+      console.log("Missing required fields");
+      return res.status(400).json({
+        error: "Email, OTP and new password are required",
       });
     }
 
-    // Find and verify OTP
+    if (newPassword.length < 8) {
+      console.log("Password too short");
+      return res.status(400).json({
+        error: "Password must be at least 8 characters",
+      });
+    }
+
+    console.log("Searching OTP...");
+
     const otpRecord = await OTP.findOne({
       email,
       otp,
-      type: 'password-reset',
+      type: "password-reset",
       expiresAt: { $gt: new Date() },
       verified: false,
     });
 
+    console.log("OTP Record:", otpRecord);
+
     if (!otpRecord) {
-      return res.status(400).json({ error: 'Invalid or expired OTP' });
+      console.log("OTP not found");
+      return res.status(400).json({
+        error: "Invalid or expired OTP",
+      });
     }
 
-    // Find user
-    const user = await User.findOne({ email });
+    console.log("Searching user...");
+
+    const user = await User.findOne({ email }).select("+password");
+
+    console.log("User Found:", !!user);
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({
+        error: "User not found",
+      });
     }
 
-    // Update password (will be hashed by pre-save hook)
+    console.log("Updating password...");
+
     user.password = newPassword;
+
     await user.save();
 
-    // Mark OTP as verified and delete it
+    console.log("Password Saved");
+
     otpRecord.verified = true;
     await otpRecord.save();
+
     await OTP.deleteOne({ _id: otpRecord._id });
 
-    console.log('Password reset successful for:', email);
+    console.log("OTP Deleted");
+    console.log("========== PASSWORD RESET SUCCESS ==========");
 
     return res.status(200).json({
-      message: 'Password reset successfully. Please login with your new password.',
+      message: "Password reset successfully.",
     });
+
   } catch (error) {
-    console.error('Reset password error:', error);
-    return res.status(500).json({ error: 'Internal server error', details: String(error) });
+    console.error("========== RESET PASSWORD ERROR ==========");
+    console.error(error);
+    console.error(error.stack);
+
+    return res.status(500).json({
+      error: error.message,
+    });
   }
 });
 
