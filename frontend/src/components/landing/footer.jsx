@@ -74,19 +74,7 @@ export default function Footer() {
                 className="flex items-center gap-2 text-sm text-gray-600 hover:text-emerald-600 transition"
               >
                 <Mail className="w-4 h-4" />
-                rakshitalbhat07@gmail.com
               </a>
-
-              <a
-                href="https://www.linkedin.com/in/Rakshita-bhat"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 hover:text-emerald-600 transition"
-              >
-                <Linkedin className="w-4 h-4" />
-                linkedin.com/in/Rakshita-bhat
-              </a>
-
             </div>
           </div>
 
@@ -94,8 +82,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-200 mt-10 pt-6">
           <p className="text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} DheeVerse. Built with ❤️ using React,
-            Node.js, Express, MongoDB & AI.
+            © {new Date().getFullYear()} DheeVerse. Built with ❤️
           </p>
         </div>
 
