@@ -155,9 +155,8 @@ export function JournalProvider({ children }) {
     try {
       setLoading(true);
       setError(null);
-      console.log('📥 Loading entries from backend...');
+      
       const fetchedEntries = await journalAPI.getAll(null);
-      console.log(`✅ Loaded ${fetchedEntries.length} entries from backend`);
       setEntries(fetchedEntries);
     } catch (err) {
       console.error('❌ Failed to load entries:', err);
@@ -170,17 +169,13 @@ export function JournalProvider({ children }) {
 
   const addEntry = async (entry) => {
     try {
-      console.log('📝 Adding entry with data:', { 
-        hasContent: !!entry.content, 
-        aiSource: entry.aiSource,
-        mood: entry.mood 
-      });
+      
 
       // Save to backend first
       if (user?._id || user?.id) {
-        console.log('💾 Saving to backend...');
+        
         const savedEntry = await journalAPI.create(entry);
-        console.log('✅ Entry saved to backend:', savedEntry);
+        
         
         // Add saved entry to state
         setEntries((prev) => [savedEntry, ...prev]);
