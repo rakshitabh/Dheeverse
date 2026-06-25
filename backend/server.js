@@ -52,6 +52,25 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });
 });
 
+app.get("/api/test-email", async (req, res) => {
+  try {
+    const { sendOTPEmail } = require("./lib/email");
+
+    await sendOTPEmail(
+      process.env.SMTP_USER,
+      "123456",
+      "signup"
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: String(error),
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error("Error:", err);
@@ -83,3 +102,5 @@ server.on("error", (err) => {
     process.exit(1);
   }
 });
+
+
