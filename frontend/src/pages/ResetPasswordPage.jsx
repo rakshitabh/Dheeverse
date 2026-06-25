@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+const API_BASE = import.meta.env.VITE_API_URL;
+console.log("API_BASE =", API_BASE);
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -100,6 +102,7 @@ export default function ResetPasswordPage() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
+    console.log("Reset button clicked");
     setError('');
 
     if (!otp || !newPassword || !confirmPassword) {
